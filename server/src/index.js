@@ -3,6 +3,7 @@ const cors = require('cors')
 require('dotenv').config()
 
 const authRoutes = require('./routes/auth.routes')
+const transactionRoutes = require('./routes/transaction.routes')
 
 const app = express()
 
@@ -15,6 +16,7 @@ app.use(express.json())
 
 // Routes
 app.use('/api/auth', authRoutes)
+app.use('/api/transactions', transactionRoutes)
 
 app.get('/', (req, res) => {
     res.json({ message: 'Finance Tracker API is running!' })
