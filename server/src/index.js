@@ -4,6 +4,7 @@ require('dotenv').config()
 
 const authRoutes = require('./routes/auth.routes')
 const transactionRoutes = require('./routes/transaction.routes')
+const budgetRoutes = require('./routes/budget.routes')
 
 const app = express()
 
@@ -17,6 +18,7 @@ app.use(express.json())
 // Routes
 app.use('/api/auth', authRoutes)
 app.use('/api/transactions', transactionRoutes)
+app.use('/api/budgets', budgetRoutes)
 
 app.get('/', (req, res) => {
     res.json({ message: 'Finance Tracker API is running!' })
