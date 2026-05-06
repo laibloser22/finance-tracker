@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom'
 import ProtectedRoute from './components/common/ProtectedRoute'
+import Navbar from './components/common/Navbar'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
 import Register from './pages/Register'
@@ -11,9 +12,24 @@ function App() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-      <Route path="/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />
-      <Route path="/budgets" element={<ProtectedRoute><Budgets /></ProtectedRoute>} />
+      <Route path="/" element={
+        <ProtectedRoute>
+          <Navbar />
+          <Dashboard />
+        </ProtectedRoute>
+      } />
+      <Route path="/transactions" element={
+        <ProtectedRoute>
+          <Navbar />
+          <Transactions />
+        </ProtectedRoute>
+      } />
+      <Route path="/budgets" element={
+        <ProtectedRoute>
+          <Navbar />
+          <Budgets />
+        </ProtectedRoute>
+      } />
     </Routes>
   )
 }
