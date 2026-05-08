@@ -15,8 +15,8 @@ function useTransactions(month, year) {
                 const query = `?month=${month}&year=${year}`
 
                 const [txRes, summaryRes] = await Promise.all([
-                    fetch(`http://localhost:5000/api/transactions${query}`, { headers }),
-                    fetch(`http://localhost:5000/api/transactions/summary${query}`, { headers })
+                    fetch(`https://finance-tracker-api-xy6e.onrender.com/api/transactions${query}`, { headers }),
+                    fetch(`https://finance-tracker-api-xy6e.onrender.com/api/transactions/summary${query}`, { headers })
                 ])
 
                 const txData = await txRes.json()

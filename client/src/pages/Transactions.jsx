@@ -25,7 +25,7 @@ function Transactions() {
 
     const handleSubmit = async () => {
         try {
-            const res = await fetch('http://localhost:5000/api/transactions', {
+            const res = await fetch('https://finance-tracker-api-xy6e.onrender.com/api/transactions', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify({ ...form, amount: Math.round(parseFloat(form.amount) * 100) })
@@ -41,7 +41,7 @@ function Transactions() {
 
     const handleDelete = async (id) => {
         try {
-            await fetch(`http://localhost:5000/api/transactions/${id}`, {
+            await fetch(`https://finance-tracker-api-xy6e.onrender.com/api/transactions/${id}`, {
                 method: 'DELETE',
                 headers: { Authorization: `Bearer ${token}` }
             })

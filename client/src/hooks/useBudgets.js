@@ -13,7 +13,7 @@ function useBudgets(month, year) {
                 const headers = { Authorization: `Bearer ${token}` }
                 const query = `?month=${month}&year=${year}`
 
-                const res = await fetch(`http://localhost:5000/api/budgets/status${query}`, { headers })
+                const res = await fetch(`https://finance-tracker-api-xy6e.onrender.com/api/budgets/status${query}`, { headers })
                 const data = await res.json()
                 setBudgetStatus(data)
             } catch (error) {

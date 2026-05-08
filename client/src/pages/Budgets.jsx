@@ -22,7 +22,7 @@ function Budgets() {
 
     const handleSubmit = async () => {
         try {
-            const res = await fetch('http://localhost:5000/api/budgets', {
+            const res = await fetch('https://finance-tracker-api-xy6e.onrender.com/api/budgets', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify({
@@ -32,7 +32,7 @@ function Budgets() {
                 })
             })
             await res.json()
-            const statusRes = await fetch(`http://localhost:5000/api/budgets/status?month=${month}&year=${year}`, {
+            const statusRes = await fetch(`https://finance-tracker-api-xy6e.onrender.com/api/budgets/status?month=${month}&year=${year}`, {
                 headers: { Authorization: `Bearer ${token}` }
             })
             const statusData = await statusRes.json()
