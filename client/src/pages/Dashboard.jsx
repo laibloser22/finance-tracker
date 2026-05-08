@@ -1,12 +1,44 @@
 import { useState } from 'react'
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts'
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 import useTransactions from '../hooks/useTransactions'
 import useBudgets from '../hooks/useBudgets'
 
-const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899']
+const COLORS = ['#6366f1', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
 
-const formatCurrency = (amount) => {
-    return `$${(amount / 100).toFixed(2)}`
+const formatCurrency = (amount) => `$${(amount / 100).toFixed(2)}`
+
+function SummaryCard({ label, value, color, glow, delay, icon }) {
+    return (
+        <div className={`animate-fade-up stagger-${delay}`} style={{
+            background: 'rgba(255,255,255,0.6)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255,255,255,0.9)',
+            borderRadius: '20px',
+            padding: '1.75rem',
+            boxShadow: `0 8px 32px ${glow}, 0 2px 8px rgba(0,0,0,0.04)`,
+            transition: 'all 0.3s ease',
+            cursor: 'default',
+            opacity: 0,
+        }}
+            onMouseEnter={e => {
+                e.currentTarget.style.transform = 'translateY(-6px)'
+                e.currentTarget.style.boxShadow = `0 20px 60px ${glow}, 0 4px 16px rgba(0,0,0,0.08)`
+            }}
+            onMouseLeave={e => {
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = `0 8px 32px ${glow}, 0 2px 8px rgba(0,0,0,0.04)`
+            }}
+        >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                <p style={{ fontSize: '0.85rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</p>
+                <span style={{ fontSize: '1.5rem' }}>{icon}</span>
+            </div>
+            <p style={{ fontSize: '2.2rem', fontWeight: 800, color, fontFamily: 'JetBrains Mono, monospace', letterSpacing: '-0.02em' }}>
+                {value}
+            </p>
+        </div>
+    )
 }
 
 function Dashboard() {
@@ -17,7 +49,6 @@ function Dashboard() {
     const { transactions, summary, loading } = useTransactions(month, year)
     const { budgetStatus } = useBudgets(month, year)
 
-    // Build pie chart data from expenses by category
     const pieData = transactions
         .filter(t => t.type === 'EXPENSE')
         .reduce((acc, t) => {
@@ -29,50 +60,73 @@ function Dashboard() {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <p className="text-gray-500">Loading dashboard...</p>
+            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ textAlign: 'center' }}>
+                    <div style={{
+                        width: '48px', height: '48px', borderRadius: '50%',
+                        border: '3px solid rgba(99,102,241,0.2)',
+                        borderTop: '3px solid #6366f1',
+                        animation: 'spin 1s linear infinite',
+                        margin: '0 auto 1rem'
+                    }} />
+                    <p style={{ color: '#6b7280', fontWeight: 500 }}>Loading your finances...</p>
+                </div>
             </div>
         )
     }
 
     return (
-        <div className="min-h-screen bg-gray-100 p-6">
-            <div className="max-w-6xl mx-auto">
-                <h2 className="text-2xl font-bold text-gray-800 mb-6">Dashboard</h2>
+        <div style={{ minHeight: '100vh', padding: '2rem' }}>
+            <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
 
-                {/* Summary Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                    <div className="bg-white rounded-xl shadow p-6">
-                        <p className="text-sm text-gray-500 mb-1">Total Income</p>
-                        <p className="text-3xl font-bold text-green-500">{formatCurrency(summary.income)}</p>
-                    </div>
-                    <div className="bg-white rounded-xl shadow p-6">
-                        <p className="text-sm text-gray-500 mb-1">Total Expenses</p>
-                        <p className="text-3xl font-bold text-red-500">{formatCurrency(summary.expenses)}</p>
-                    </div>
-                    <div className="bg-white rounded-xl shadow p-6">
-                        <p className="text-sm text-gray-500 mb-1">Balance</p>
-                        <p className={`text-3xl font-bold ${summary.balance >= 0 ? 'text-blue-500' : 'text-red-500'}`}>
-                            {formatCurrency(summary.balance)}
-                        </p>
-                    </div>
+                {/* Header */}
+                <div className="animate-fade-up" style={{ marginBottom: '2rem' }}>
+                    <h2 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#1e1b4b', marginBottom: '0.25rem' }}>
+                        Good {now.getHours() < 12 ? 'Morning' : now.getHours() < 17 ? 'Afternoon' : 'Evening'} 👋
+                    </h2>
+                    <p style={{ color: '#6b7280', fontWeight: 500 }}>
+                        {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                    </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                {/* Summary Cards */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.25rem', marginBottom: '1.75rem' }}>
+                    <SummaryCard label="Total Income" value={formatCurrency(summary.income)} color="#10b981" glow="rgba(16,185,129,0.15)" delay={1} icon="💚" />
+                    <SummaryCard label="Total Expenses" value={formatCurrency(summary.expenses)} color="#ef4444" glow="rgba(239,68,68,0.15)" delay={2} icon="🔴" />
+                    <SummaryCard label="Balance" value={formatCurrency(summary.balance)} color={summary.balance >= 0 ? '#6366f1' : '#ef4444'} glow="rgba(99,102,241,0.15)" delay={3} icon="⚡" />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', marginBottom: '1.75rem' }}>
+
                     {/* Pie Chart */}
-                    <div className="bg-white rounded-xl shadow p-6">
-                        <h3 className="text-lg font-semibold text-gray-700 mb-4">Spending by Category</h3>
+                    <div className="animate-fade-up stagger-2" style={{
+                        background: 'rgba(255,255,255,0.6)',
+                        backdropFilter: 'blur(20px)',
+                        WebkitBackdropFilter: 'blur(20px)',
+                        border: '1px solid rgba(255,255,255,0.9)',
+                        borderRadius: '20px',
+                        padding: '1.75rem',
+                        boxShadow: '0 8px 32px rgba(99,102,241,0.1)',
+                        opacity: 0,
+                    }}>
+                        <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#1e1b4b', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'linear-gradient(135deg, #6366f1, #06b6d4)', display: 'inline-block' }} />
+                            Spending by Category
+                        </h3>
                         {pieData.length === 0 ? (
-                            <p className="text-gray-400 text-center py-10">No expenses this month</p>
+                            <div style={{ textAlign: 'center', padding: '3rem 0', color: '#9ca3af' }}>
+                                <p style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🎯</p>
+                                <p style={{ fontWeight: 500 }}>No expenses this month</p>
+                            </div>
                         ) : (
-                            <ResponsiveContainer width="100%" height={250}>
+                            <ResponsiveContainer width="100%" height={240}>
                                 <PieChart>
-                                    <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+                                    <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90} innerRadius={50} paddingAngle={3}>
                                         {pieData.map((_, index) => (
                                             <Cell key={index} fill={COLORS[index % COLORS.length]} />
                                         ))}
                                     </Pie>
-                                    <Tooltip formatter={(value) => formatCurrency(value)} />
+                                    <Tooltip formatter={(value) => formatCurrency(value)} contentStyle={{ borderRadius: '12px', border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(10px)' }} />
                                     <Legend />
                                 </PieChart>
                             </ResponsiveContainer>
@@ -80,27 +134,54 @@ function Dashboard() {
                     </div>
 
                     {/* Budget Status */}
-                    <div className="bg-white rounded-xl shadow p-6">
-                        <h3 className="text-lg font-semibold text-gray-700 mb-4">Budget Status</h3>
+                    <div className="animate-fade-up stagger-3" style={{
+                        background: 'rgba(255,255,255,0.6)',
+                        backdropFilter: 'blur(20px)',
+                        WebkitBackdropFilter: 'blur(20px)',
+                        border: '1px solid rgba(255,255,255,0.9)',
+                        borderRadius: '20px',
+                        padding: '1.75rem',
+                        boxShadow: '0 8px 32px rgba(99,102,241,0.1)',
+                        opacity: 0,
+                    }}>
+                        <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#1e1b4b', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'linear-gradient(135deg, #10b981, #06b6d4)', display: 'inline-block' }} />
+                            Budget Status
+                        </h3>
                         {budgetStatus.length === 0 ? (
-                            <p className="text-gray-400 text-center py-10">No budgets set this month</p>
+                            <div style={{ textAlign: 'center', padding: '3rem 0', color: '#9ca3af' }}>
+                                <p style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📊</p>
+                                <p style={{ fontWeight: 500 }}>No budgets set</p>
+                            </div>
                         ) : (
-                            <div className="space-y-4">
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                                 {budgetStatus.map((budget) => (
                                     <div key={budget.category}>
-                                        <div className="flex justify-between text-sm mb-1">
-                                            <span className="font-medium text-gray-700">{budget.category}</span>
-                                            <span className="text-gray-500">
-                                                {formatCurrency(budget.spent)} / {formatCurrency(budget.limit)}
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                                            <span style={{ fontWeight: 600, color: '#1e1b4b', fontSize: '0.9rem' }}>{budget.category}</span>
+                                            <span style={{
+                                                fontSize: '0.75rem', fontWeight: 700, padding: '2px 10px', borderRadius: '20px',
+                                                background: budget.percentage > 100 ? 'rgba(239,68,68,0.1)' : budget.percentage > 75 ? 'rgba(245,158,11,0.1)' : 'rgba(16,185,129,0.1)',
+                                                color: budget.percentage > 100 ? '#ef4444' : budget.percentage > 75 ? '#f59e0b' : '#10b981',
+                                            }}>
+                                                {budget.percentage}%
                                             </span>
                                         </div>
-                                        <div className="w-full bg-gray-200 rounded-full h-2">
-                                            <div
-                                                className={`h-2 rounded-full ${budget.percentage > 100 ? 'bg-red-500' : budget.percentage > 75 ? 'bg-yellow-500' : 'bg-green-500'}`}
-                                                style={{ width: `${Math.min(budget.percentage, 100)}%` }}
-                                            />
+                                        <div style={{ background: 'rgba(99,102,241,0.08)', borderRadius: '999px', height: '8px', overflow: 'hidden' }}>
+                                            <div style={{
+                                                height: '100%', borderRadius: '999px',
+                                                width: `${Math.min(budget.percentage, 100)}%`,
+                                                background: budget.percentage > 100 ? 'linear-gradient(90deg, #ef4444, #f87171)' :
+                                                    budget.percentage > 75 ? 'linear-gradient(90deg, #f59e0b, #fbbf24)' :
+                                                        'linear-gradient(90deg, #6366f1, #06b6d4)',
+                                                transition: 'width 1s ease',
+                                                boxShadow: budget.percentage > 100 ? '0 0 8px rgba(239,68,68,0.5)' : '0 0 8px rgba(99,102,241,0.4)',
+                                            }} />
                                         </div>
-                                        <p className="text-xs text-gray-400 mt-1">{budget.percentage}% used</p>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
+                                            <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>Spent: {formatCurrency(budget.spent)}</span>
+                                            <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>Limit: {formatCurrency(budget.limit)}</span>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -109,19 +190,57 @@ function Dashboard() {
                 </div>
 
                 {/* Recent Transactions */}
-                <div className="bg-white rounded-xl shadow p-6">
-                    <h3 className="text-lg font-semibold text-gray-700 mb-4">Recent Transactions</h3>
+                <div className="animate-fade-up stagger-4" style={{
+                    background: 'rgba(255,255,255,0.6)',
+                    backdropFilter: 'blur(20px)',
+                    WebkitBackdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255,255,255,0.9)',
+                    borderRadius: '20px',
+                    padding: '1.75rem',
+                    boxShadow: '0 8px 32px rgba(99,102,241,0.1)',
+                    opacity: 0,
+                }}>
+                    <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#1e1b4b', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'linear-gradient(135deg, #f59e0b, #ef4444)', display: 'inline-block' }} />
+                        Recent Transactions
+                    </h3>
                     {transactions.length === 0 ? (
-                        <p className="text-gray-400 text-center py-10">No transactions this month</p>
+                        <div style={{ textAlign: 'center', padding: '3rem 0', color: '#9ca3af' }}>
+                            <p style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>💳</p>
+                            <p style={{ fontWeight: 500 }}>No transactions this month</p>
+                        </div>
                     ) : (
-                        <div className="space-y-3">
-                            {transactions.slice(0, 5).map((t) => (
-                                <div key={t.id} className="flex items-center justify-between py-2 border-b border-gray-100">
-                                    <div>
-                                        <p className="font-medium text-gray-700">{t.description || t.category}</p>
-                                        <p className="text-sm text-gray-400">{t.category} • {new Date(t.date).toLocaleDateString()}</p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                            {transactions.slice(0, 5).map((t, i) => (
+                                <div key={t.id} style={{
+                                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                    padding: '1rem 1.25rem', borderRadius: '14px',
+                                    background: i % 2 === 0 ? 'rgba(99,102,241,0.03)' : 'transparent',
+                                    border: '1px solid rgba(99,102,241,0.06)',
+                                    transition: 'all 0.2s ease',
+                                }}
+                                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.06)'}
+                                    onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? 'rgba(99,102,241,0.03)' : 'transparent'}
+                                >
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                        <div style={{
+                                            width: '40px', height: '40px', borderRadius: '12px',
+                                            background: t.type === 'INCOME' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            fontSize: '1.1rem'
+                                        }}>
+                                            {t.type === 'INCOME' ? '💚' : '🔴'}
+                                        </div>
+                                        <div>
+                                            <p style={{ fontWeight: 600, color: '#1e1b4b', fontSize: '0.95rem' }}>{t.description || t.category}</p>
+                                            <p style={{ fontSize: '0.78rem', color: '#9ca3af', marginTop: '2px' }}>{t.category} • {new Date(t.date).toLocaleDateString()}</p>
+                                        </div>
                                     </div>
-                                    <p className={`font-bold ${t.type === 'INCOME' ? 'text-green-500' : 'text-red-500'}`}>
+                                    <p style={{
+                                        fontWeight: 700, fontSize: '1rem',
+                                        fontFamily: 'JetBrains Mono, monospace',
+                                        color: t.type === 'INCOME' ? '#10b981' : '#ef4444'
+                                    }}>
                                         {t.type === 'INCOME' ? '+' : '-'}{formatCurrency(t.amount)}
                                     </p>
                                 </div>

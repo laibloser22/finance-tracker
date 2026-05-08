@@ -3,6 +3,11 @@ import useBudgets from '../hooks/useBudgets'
 
 const CATEGORIES = ['Food', 'Rent', 'Transport', 'Entertainment', 'Shopping', 'Health', 'Other']
 
+const CATEGORY_ICONS = {
+    Food: '🍔', Rent: '🏠', Transport: '🚗', Entertainment: '🎮',
+    Shopping: '🛍️', Health: '💊', Other: '📦'
+}
+
 const formatCurrency = (amount) => `$${(amount / 100).toFixed(2)}`
 
 function Budgets() {
@@ -19,27 +24,19 @@ function Budgets() {
         try {
             const res = await fetch('http://localhost:5000/api/budgets', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                },
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify({
                     category: form.category,
                     amount: Math.round(parseFloat(form.amount) * 100),
-                    month,
-                    year
+                    month, year
                 })
             })
-
             await res.json()
-
-            // Refresh budget status
             const statusRes = await fetch(`http://localhost:5000/api/budgets/status?month=${month}&year=${year}`, {
                 headers: { Authorization: `Bearer ${token}` }
             })
             const statusData = await statusRes.json()
             setBudgetStatus(statusData)
-
             setShowModal(false)
             setForm({ category: 'Food', amount: '' })
         } catch (error) {
@@ -47,27 +44,57 @@ function Budgets() {
         }
     }
 
+    const inputStyle = {
+        background: 'rgba(255,255,255,0.7)',
+        border: '1px solid rgba(99,102,241,0.2)',
+        borderRadius: '12px',
+        padding: '0.75rem 1rem',
+        fontFamily: 'Outfit, sans-serif',
+        fontSize: '0.95rem',
+        color: '#1e1b4b',
+        width: '100%',
+        outline: 'none',
+    }
+
+    const labelStyle = {
+        display: 'block', fontWeight: 600, fontSize: '0.8rem',
+        color: '#1e1b4b', marginBottom: '0.5rem',
+        textTransform: 'uppercase', letterSpacing: '0.05em'
+    }
+
     return (
-        <div className="min-h-screen bg-gray-100 p-6">
-            <div className="max-w-4xl mx-auto">
+        <div style={{ minHeight: '100vh', padding: '2rem', fontFamily: 'Outfit, sans-serif' }}>
+            <div style={{ maxWidth: '900px', margin: '0 auto' }}>
 
                 {/* Header */}
-                <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold text-gray-800">Budgets</h2>
-                    <button
-                        onClick={() => setShowModal(true)}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-                    >
+                <div className="animate-fade-up" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem' }}>
+                    <div>
+                        <h2 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#1e1b4b', marginBottom: '0.25rem' }}>Budgets</h2>
+                        <p style={{ color: '#6b7280', fontWeight: 500 }}>Set monthly limits and track your spending</p>
+                    </div>
+                    <button onClick={() => setShowModal(true)} className="btn-primary">
                         + Set Budget
                     </button>
                 </div>
 
                 {/* Filters */}
-                <div className="bg-white rounded-xl shadow p-4 mb-6 flex gap-4">
+                <div className="animate-fade-up stagger-1" style={{
+                    background: 'rgba(255,255,255,0.6)',
+                    backdropFilter: 'blur(20px)',
+                    WebkitBackdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255,255,255,0.9)',
+                    borderRadius: '16px',
+                    padding: '1.25rem 1.5rem',
+                    marginBottom: '1.5rem',
+                    boxShadow: '0 4px 20px rgba(99,102,241,0.08)',
+                    display: 'flex', gap: '1rem', alignItems: 'center',
+                    opacity: 0,
+                }}>
+                    <span style={{ fontWeight: 600, color: '#6b7280', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Period:</span>
                     <select
                         value={month}
                         onChange={(e) => setMonth(parseInt(e.target.value))}
-                        className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        style={{ ...inputStyle, width: 'auto', padding: '0.5rem 1rem' }}
                     >
                         {Array.from({ length: 12 }, (_, i) => (
                             <option key={i + 1} value={i + 1}>
@@ -78,50 +105,131 @@ function Budgets() {
                     <select
                         value={year}
                         onChange={(e) => setYear(parseInt(e.target.value))}
-                        className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        style={{ ...inputStyle, width: 'auto', padding: '0.5rem 1rem' }}
                     >
-                        {[2024, 2025, 2026].map(y => (
-                            <option key={y} value={y}>{y}</option>
-                        ))}
+                        {[2024, 2025, 2026].map(y => <option key={y} value={y}>{y}</option>)}
                     </select>
+                    <span style={{ marginLeft: 'auto', fontSize: '0.85rem', color: '#9ca3af', fontWeight: 500 }}>
+                        {budgetStatus.length} budget{budgetStatus.length !== 1 ? 's' : ''} set
+                    </span>
                 </div>
 
                 {/* Budget Cards */}
                 {loading ? (
-                    <p className="text-center text-gray-400 py-10">Loading...</p>
+                    <div style={{ textAlign: 'center', padding: '4rem', color: '#9ca3af' }}>
+                        <p style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>⏳</p>
+                        <p style={{ fontWeight: 500 }}>Loading budgets...</p>
+                    </div>
                 ) : budgetStatus.length === 0 ? (
-                    <div className="bg-white rounded-xl shadow p-10 text-center">
-                        <p className="text-gray-400 mb-2">No budgets set for this month</p>
-                        <p className="text-sm text-gray-300">Click "Set Budget" to get started</p>
+                    <div style={{
+                        background: 'rgba(255,255,255,0.6)',
+                        backdropFilter: 'blur(20px)',
+                        WebkitBackdropFilter: 'blur(20px)',
+                        border: '1px solid rgba(255,255,255,0.9)',
+                        borderRadius: '20px',
+                        padding: '4rem',
+                        textAlign: 'center',
+                        boxShadow: '0 8px 32px rgba(99,102,241,0.1)',
+                    }}>
+                        <p style={{ fontSize: '3.5rem', marginBottom: '1rem' }}>🎯</p>
+                        <p style={{ fontWeight: 700, fontSize: '1.2rem', color: '#1e1b4b', marginBottom: '0.5rem' }}>No budgets set yet</p>
+                        <p style={{ color: '#9ca3af', fontSize: '0.95rem', marginBottom: '1.5rem' }}>Set monthly limits to track your spending</p>
+                        <button onClick={() => setShowModal(true)} className="btn-primary">
+                            + Set Your First Budget
+                        </button>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {budgetStatus.map((budget) => (
-                            <div key={budget.category} className="bg-white rounded-xl shadow p-6">
-                                <div className="flex justify-between items-center mb-3">
-                                    <h3 className="font-semibold text-gray-700 text-lg">{budget.category}</h3>
-                                    <span className={`text-sm font-medium px-2 py-1 rounded-full ${budget.percentage > 100 ? 'bg-red-100 text-red-600' :
-                                            budget.percentage > 75 ? 'bg-yellow-100 text-yellow-600' :
-                                                'bg-green-100 text-green-600'
-                                        }`}>
-                                        {budget.percentage}% used
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', gap: '1.25rem' }}>
+                        {budgetStatus.map((budget, index) => (
+                            <div
+                                key={budget.category}
+                                className={`animate-fade-up stagger-${Math.min(index + 1, 4)}`}
+                                style={{
+                                    background: 'rgba(255,255,255,0.6)',
+                                    backdropFilter: 'blur(20px)',
+                                    WebkitBackdropFilter: 'blur(20px)',
+                                    border: '1px solid rgba(255,255,255,0.9)',
+                                    borderRadius: '20px',
+                                    padding: '1.75rem',
+                                    boxShadow: '0 8px 32px rgba(99,102,241,0.08)',
+                                    transition: 'all 0.3s ease',
+                                    opacity: 0,
+                                }}
+                                onMouseEnter={e => {
+                                    e.currentTarget.style.transform = 'translateY(-4px)'
+                                    e.currentTarget.style.boxShadow = '0 20px 50px rgba(99,102,241,0.15)'
+                                }}
+                                onMouseLeave={e => {
+                                    e.currentTarget.style.transform = 'translateY(0)'
+                                    e.currentTarget.style.boxShadow = '0 8px 32px rgba(99,102,241,0.08)'
+                                }}
+                            >
+                                {/* Card Header */}
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                        <div style={{
+                                            width: '46px', height: '46px', borderRadius: '14px',
+                                            background: budget.percentage > 100 ? 'rgba(239,68,68,0.1)' : budget.percentage > 75 ? 'rgba(245,158,11,0.1)' : 'rgba(99,102,241,0.1)',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            fontSize: '1.4rem',
+                                            border: budget.percentage > 100 ? '1px solid rgba(239,68,68,0.2)' : budget.percentage > 75 ? '1px solid rgba(245,158,11,0.2)' : '1px solid rgba(99,102,241,0.15)',
+                                        }}>
+                                            {CATEGORY_ICONS[budget.category] || '📦'}
+                                        </div>
+                                        <div>
+                                            <p style={{ fontWeight: 700, color: '#1e1b4b', fontSize: '1rem' }}>{budget.category}</p>
+                                            <p style={{ fontSize: '0.78rem', color: '#9ca3af', fontWeight: 500 }}>Monthly Budget</p>
+                                        </div>
+                                    </div>
+                                    <span style={{
+                                        fontSize: '0.8rem', fontWeight: 700, padding: '4px 12px', borderRadius: '20px',
+                                        background: budget.percentage > 100 ? 'rgba(239,68,68,0.1)' : budget.percentage > 75 ? 'rgba(245,158,11,0.1)' : 'rgba(16,185,129,0.1)',
+                                        color: budget.percentage > 100 ? '#ef4444' : budget.percentage > 75 ? '#f59e0b' : '#10b981',
+                                        border: budget.percentage > 100 ? '1px solid rgba(239,68,68,0.2)' : budget.percentage > 75 ? '1px solid rgba(245,158,11,0.2)' : '1px solid rgba(16,185,129,0.2)',
+                                    }}>
+                                        {budget.percentage > 100 ? '🚨 Over' : budget.percentage > 75 ? '⚠️ Warning' : '✅ On Track'}
                                     </span>
                                 </div>
 
-                                <div className="w-full bg-gray-200 rounded-full h-3 mb-3">
-                                    <div
-                                        className={`h-3 rounded-full transition-all ${budget.percentage > 100 ? 'bg-red-500' :
-                                                budget.percentage > 75 ? 'bg-yellow-500' :
-                                                    'bg-green-500'
-                                            }`}
-                                        style={{ width: `${Math.min(budget.percentage, 100)}%` }}
-                                    />
+                                {/* Progress Bar */}
+                                <div style={{ background: 'rgba(99,102,241,0.08)', borderRadius: '999px', height: '10px', overflow: 'hidden', marginBottom: '1rem' }}>
+                                    <div style={{
+                                        height: '100%', borderRadius: '999px',
+                                        width: `${Math.min(budget.percentage, 100)}%`,
+                                        background: budget.percentage > 100 ? 'linear-gradient(90deg, #ef4444, #f87171)' :
+                                            budget.percentage > 75 ? 'linear-gradient(90deg, #f59e0b, #fbbf24)' :
+                                                'linear-gradient(90deg, #6366f1, #06b6d4)',
+                                        boxShadow: budget.percentage > 100 ? '0 0 10px rgba(239,68,68,0.5)' :
+                                            budget.percentage > 75 ? '0 0 10px rgba(245,158,11,0.5)' :
+                                                '0 0 10px rgba(99,102,241,0.5)',
+                                        transition: 'width 1s ease',
+                                    }} />
                                 </div>
 
-                                <div className="flex justify-between text-sm text-gray-500">
-                                    <span>Spent: <span className="font-medium text-gray-700">{formatCurrency(budget.spent)}</span></span>
-                                    <span>Limit: <span className="font-medium text-gray-700">{formatCurrency(budget.limit)}</span></span>
-                                    <span>Left: <span className={`font-medium ${budget.remaining < 0 ? 'text-red-500' : 'text-green-500'}`}>{formatCurrency(budget.remaining)}</span></span>
+                                {/* Stats */}
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem' }}>
+                                    {[
+                                        { label: 'Spent', value: formatCurrency(budget.spent), color: '#ef4444' },
+                                        { label: 'Limit', value: formatCurrency(budget.limit), color: '#6366f1' },
+                                        { label: 'Left', value: formatCurrency(budget.remaining), color: budget.remaining >= 0 ? '#10b981' : '#ef4444' },
+                                    ].map(stat => (
+                                        <div key={stat.label} style={{
+                                            background: 'rgba(99,102,241,0.04)',
+                                            borderRadius: '12px', padding: '0.75rem',
+                                            textAlign: 'center',
+                                            border: '1px solid rgba(99,102,241,0.08)',
+                                        }}>
+                                            <p style={{ fontSize: '0.72rem', color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>{stat.label}</p>
+                                            <p style={{ fontWeight: 800, color: stat.color, fontSize: '0.95rem', fontFamily: 'JetBrains Mono, monospace' }}>{stat.value}</p>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Percentage */}
+                                <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+                                    <span style={{ fontSize: '0.85rem', color: '#9ca3af', fontWeight: 500 }}>
+                                        {budget.percentage}% of budget used
+                                    </span>
                                 </div>
                             </div>
                         ))}
@@ -129,48 +237,63 @@ function Budgets() {
                 )}
             </div>
 
-            {/* Set Budget Modal */}
+            {/* Modal */}
             {showModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
-                        <h3 className="text-lg font-bold text-gray-800 mb-4">Set Budget</h3>
+                <div style={{
+                    position: 'fixed', inset: 0, zIndex: 1000,
+                    background: 'rgba(30,27,75,0.3)',
+                    backdropFilter: 'blur(8px)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    padding: '1rem',
+                }}>
+                    <div style={{
+                        background: 'rgba(255,255,255,0.9)',
+                        backdropFilter: 'blur(24px)',
+                        WebkitBackdropFilter: 'blur(24px)',
+                        border: '1px solid rgba(255,255,255,0.95)',
+                        borderRadius: '24px',
+                        padding: '2rem',
+                        width: '100%', maxWidth: '420px',
+                        boxShadow: '0 20px 60px rgba(99,102,241,0.2)',
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.75rem' }}>
+                            <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#1e1b4b' }}>🎯 Set Budget</h3>
+                            <button
+                                onClick={() => setShowModal(false)}
+                                style={{ background: 'rgba(99,102,241,0.08)', border: 'none', borderRadius: '8px', width: '32px', height: '32px', cursor: 'pointer', fontSize: '1rem', color: '#6b7280' }}
+                            >✕</button>
+                        </div>
 
-                        <div className="space-y-4">
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                                <select
-                                    value={form.category}
-                                    onChange={(e) => setForm({ ...form, category: e.target.value })}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                >
-                                    {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                                <label style={labelStyle}>Category</label>
+                                <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} style={inputStyle}>
+                                    {CATEGORIES.map(c => <option key={c} value={c}>{CATEGORY_ICONS[c]} {c}</option>)}
                                 </select>
                             </div>
-
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Monthly Limit ($)</label>
+                                <label style={labelStyle}>Monthly Limit ($)</label>
                                 <input
-                                    type="number"
-                                    value={form.amount}
+                                    type="number" value={form.amount}
                                     onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    placeholder="0.00"
+                                    style={inputStyle} placeholder="0.00"
                                 />
                             </div>
                         </div>
 
-                        <div className="flex gap-3 mt-6">
+                        <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.75rem' }}>
                             <button
                                 onClick={() => setShowModal(false)}
-                                className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleSubmit}
-                                className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
-                            >
-                                Save
+                                style={{
+                                    flex: 1, padding: '0.75rem', borderRadius: '12px',
+                                    border: '1px solid rgba(99,102,241,0.2)',
+                                    background: 'transparent', color: '#6b7280',
+                                    fontFamily: 'Outfit, sans-serif', fontWeight: 600,
+                                    cursor: 'pointer', fontSize: '0.95rem',
+                                }}
+                            >Cancel</button>
+                            <button onClick={handleSubmit} className="btn-primary" style={{ flex: 1 }}>
+                                Save Budget
                             </button>
                         </div>
                     </div>
