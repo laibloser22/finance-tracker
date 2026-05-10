@@ -6,7 +6,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://finance-tracker-api-xy6e.onrender.com',  // ← Quotes were missing!
+        target: 'https://finance-tracker-api-xy6e.onrender.com',
         changeOrigin: true,
         secure: true
       }
