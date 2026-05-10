@@ -2,6 +2,8 @@
 
 Ever wonder where all your money went? I built FinanceTracker to solve exactly that. It's a full-stack web app that helps you log your income and expenses, set monthly budgets, and actually see where your money is going — all in a clean, modern interface.
 
+
+🌐 **Live Demo**: [finance-tracker-hazel-nine.vercel.app](https://finance-tracker-hazel-nine.vercel.app)
 ---
 
 ## 🖥️ What it looks like
@@ -109,6 +111,8 @@ finance-tracker/
 
 ## 🙋‍♂️ Who made this
 
-I'm a full-stack developer learning by building real projects.
+I'm a full-stack developer learning by building real projects. This was built in 4 days — from database schema to deployed app.
+
+🔗 GitHub: [github.com/laibloser22](https://github.com/laibloser22)
 
 Feel free to fork it, break it, or improve it. 🚀
